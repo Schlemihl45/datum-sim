@@ -1,7 +1,6 @@
 # Datum Sim
 
-G-Code Abtrags- und Werkzeugwegsimulation für LinuxCNC.  
-Als eigenständiges Widget in beliebige PySide6-Projekte integrierbar.
+Code simulation and planning for LinuxCNC. Based on PySide6.
 
 ## Installation
 
@@ -9,7 +8,7 @@ Als eigenständiges Widget in beliebige PySide6-Projekte integrierbar.
 pip install -e .
 ```
 
-## Standalone starten
+## Starting the standalone
 
 ```bash
 datum-sim                        # leeres Fenster
@@ -17,7 +16,7 @@ datum-sim mein_programm.ngc     # Datei direkt laden
 python -m datum_sim              # alternativ
 ```
 
-## Integration in eigenes Projekt
+## Integration in your own project
 
 ```python
 from datum_sim import DatumSimWidget
@@ -32,7 +31,7 @@ widget.position_changed.connect(lambda x, y, z: ...)
 widget.simulation_ended.connect(aufraumen)
 ```
 
-## Abhängigkeiten
+## Dependencies
 
 - PySide6 >= 6.6
 - moderngl >= 5.10
