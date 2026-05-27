@@ -145,6 +145,27 @@ class AppSettings(QObject):
     show_rapid_changed = Signal(bool)
     show_grid_changed = Signal(bool)
 
+    voxel_enabled_changed = Signal(bool)
+    voxel_keep_on_stop_changed = Signal(bool)
+
+    @property
+    def voxel_keep_on_stop(self) -> bool:
+        return self._qs.value("voxel_keep_on_stop", False, type=bool)
+
+    @voxel_keep_on_stop.setter
+    def voxel_keep_on_stop(self, v: bool):
+        self._qs.setValue("voxel_keep_on_stop", v)
+        self.voxel_keep_on_stop_changed.emit(v)
+
+    @property
+    def voxel_enabled(self) -> bool:
+        return self._qs.value("sim/voxel_enabled", False, type=bool)
+
+    @voxel_enabled.setter
+    def voxel_enabled(self, v: bool):
+        self._qs.setValue("sim/voxel_enabled", v)
+        self.voxel_enabled_changed.emit(v)
+
     @property
     def sim_mode(self) -> str:
         return self._qs.value("sim/mode", "toolpath_full", type=str)
@@ -153,6 +174,7 @@ class AppSettings(QObject):
     def sim_mode(self, v: str):
         self._qs.setValue("sim/mode", v)
         self.sim_mode_changed.emit(v)
+        print(v)
 
     @property
     def tool_display(self) -> str:

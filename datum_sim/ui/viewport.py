@@ -11,9 +11,6 @@ from PySide6.QtGui import QEventPoint
 from datum_sim.core.camera import ArcballCamera
 from datum_sim.core.settings import AppSettings
 
-from datum_sim.renderer.toolpath_renderer import ToolpathRenderer
-
-
 _VERT = """
 #version 330 core
 in vec3 in_pos;

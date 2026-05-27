@@ -7,9 +7,6 @@ from datum_sim.ui.viewport import Viewport
 from datum_sim.ui.overlay.settings_panel import SettingsPanel
 from datum_sim.ui.overlay.control_hub import ControlHub
 
-from datum_sim.core.gcode_parser import GCodeParser
-from datum_sim.core.sim_engine import SimEngine
-
 
 class DatumSimWidget(QWidget):
 
@@ -32,10 +29,6 @@ class DatumSimWidget(QWidget):
         self.control_hub.stop_clicked.connect(self.stop)
         self.control_hub.speed_changed.connect(self.set_speed)
 
-        self._engine = SimEngine(self)
-        self._engine.progress.connect(self._on_sim_progress)
-        self._engine.line_changed.connect(self._on_line_changed)
-        self._engine.finished.connect(self._on_sim_finished)
 
         self._layout_overlays()
 
@@ -68,56 +61,22 @@ class DatumSimWidget(QWidget):
         self._layout_overlays()
 
     # ── Öffentliche API ───────────────────────────────────────────────────────
-    def _on_sim_progress(self, vertex_index: int):
-        self.viewport.toolpath_renderer.set_progress(vertex_index)
-        self.viewport.update()
-
-    def _on_line_changed(self, line: int):
-        self.line_changed.emit(line)
-
-    def _on_sim_finished(self):
-        self.simulation_ended.emit()
-        self.control_hub.set_gcode("Simulation abgeschlossen")
-
     def load_file(self, path: str):
-        self._engine.stop()
-        self._engine.wait()
-        parser = GCodeParser()
-        result = parser.parse_file(path)
-        self._result = result
-        self.viewport.load_result(result)
-        if result.moves:
-            self.control_hub.set_gcode(f"Geladen: {len(result.moves)} Moves")
+        print("load file")
 
     def load_gcode(self, gcode: str):
-        parser = GCodeParser()
-        result = parser.parse_string(gcode)
-        self._result = result
-        self.viewport.load_result(result)
-
+        print("loading gcode")
     def play(self):
-        if self._engine.isRunning():
-            self._engine.resume()
-        else:
-            if self._result is not None:
-                self.viewport.toolpath_renderer.reset()
-                self._engine.load(
-                    self._result,
-                    self.viewport.toolpath_renderer  # ← neu
-                )
-                self._engine.start()
+        print("play")
 
     def pause(self):
-        self._engine.pause()
+        print("pause")
 
     def stop(self):
-        self._engine.stop()
-        self._engine.wait()
-        self.viewport.toolpath_renderer.reset()
-        self.viewport.update()
+        print("stop")
 
     def set_speed(self, factor: float):
-        self._engine.set_speed(factor)
+        print("set speed")
 
     def jump_to_line(self, line: int):
         """Simulation zu einer bestimmten G-Code-Zeile vorspulen."""

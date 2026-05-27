@@ -72,16 +72,16 @@ class SimPanel(QWidget):
     # ── 1. Modus ──────────────────────────────────────────────────────────────
 
     def _build_mode(self, root):
-        root.addWidget(_section_label("Simulationsmodus"))
+        root.addWidget(_section_label("Simulation Mode"))
 
+        # ── Toolpath Modus ────────────────────────────────────────────────────
         row = QHBoxLayout()
-        row.addWidget(_row_label("Modus"))
+        row.addWidget(_row_label("Toolpath"))
         self._mode_box = QComboBox()
         self._mode_box.setStyleSheet(COMBO_STYLE)
-        self._mode_box.addItem("Werkzeugweg komplett",  "toolpath_full")
-        self._mode_box.addItem("Werkzeugweg animiert",  "toolpath_anim")
-        self._mode_box.addItem("Voxel animiert",        "voxel_anim")
-        self._mode_box.addItem("Werkzeugweg + Voxel",   "both")
+        self._mode_box.addItem("Complete Toolpath", "toolpath_full")
+        self._mode_box.addItem("Animated Toolpath", "toolpath_anim")
+        self._mode_box.addItem("None", "toolpath_none")
 
         saved = self._s.sim_mode
         for i in range(self._mode_box.count()):
@@ -90,9 +90,42 @@ class SimPanel(QWidget):
 
         self._mode_box.currentIndexChanged.connect(
             lambda _: setattr(self._s, 'sim_mode',
-                               self._mode_box.currentData()))
+                              self._mode_box.currentData()))
         row.addWidget(self._mode_box)
         root.addLayout(row)
+
+        # ── Voxel ─────────────────────────────────────────────────────────────
+        voxel_row = QHBoxLayout()
+        voxel_row.addWidget(_row_label("Voxel"))
+        self._voxel_cb = QCheckBox()
+        self._voxel_cb.setChecked(self._s.voxel_enabled)
+        self._voxel_cb.setStyleSheet(
+            "QCheckBox::indicator { width: 20px; height: 20px; }"
+        )
+        self._voxel_cb.toggled.connect(
+            lambda v: setattr(self._s, 'voxel_enabled', v)
+        )
+        voxel_row.addWidget(self._voxel_cb)
+        voxel_row.addStretch()
+        root.addLayout(voxel_row)
+
+        voxel_keep_row = QHBoxLayout()
+        voxel_keep_row.addWidget(_row_label("Keep on Stop"))
+        self._voxel_keep_cb = QCheckBox()
+        self._voxel_keep_cb.setChecked(self._s.voxel_keep_on_stop)
+        self._voxel_keep_cb.setEnabled(self._s.voxel_enabled)  # nur aktiv wenn Voxel an
+        self._voxel_keep_cb.setStyleSheet(
+            "QCheckBox::indicator { width: 20px; height: 20px; }"
+        )
+        self._voxel_keep_cb.toggled.connect(
+            lambda v: setattr(self._s, 'voxel_keep_on_stop', v)
+        )
+        voxel_keep_row.addWidget(self._voxel_keep_cb)
+        voxel_keep_row.addStretch()
+        root.addLayout(voxel_keep_row)
+
+        # Voxel-Checkbox steuert ob Keep aktiv ist
+        self._voxel_cb.toggled.connect(self._voxel_keep_cb.setEnabled)
 
     # ── 2. Werkzeug ───────────────────────────────────────────────────────────
 
@@ -103,10 +136,9 @@ class SimPanel(QWidget):
         row.addWidget(_row_label("Form"))
         self._tool_box = QComboBox()
         self._tool_box.setStyleSheet(COMBO_STYLE)
-        self._tool_box.addItem("Keins",           "none")
-        self._tool_box.addItem("Punkt",            "point")
-        self._tool_box.addItem("Zylinder",         "cylinder")
-        self._tool_box.addItem("Schaftfräser",     "endmill")
+        self._tool_box.addItem("None",           "none")
+        self._tool_box.addItem("Dot",            "point")
+        self._tool_box.addItem("Cylinder",         "cylinder")
 
         saved = self._s.tool_display
         for i in range(self._tool_box.count()):
