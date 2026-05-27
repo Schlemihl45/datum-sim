@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "datum-sim"
+version = "0.1.0"
+description = "G-Code Abtrags- und Werkzeugwegsimulation für LinuxCNC"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "PySide6>=6.6.0",
+    "moderngl>=5.10.0",
+    "numpy>=1.26.0",
+]
+
+[project.optional-dependencies]
+# Später: pip install datum-renderer[linuxcnc]
+linuxcnc = []
+
+[project.scripts]
+# Nach Installation: 'datum-renderer' als Kommandozeilenbefehl
+datum-sim = "datum_sim.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["datum_sim*"]
