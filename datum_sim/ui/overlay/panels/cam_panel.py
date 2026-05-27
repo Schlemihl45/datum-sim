@@ -1,12 +1,3 @@
-"""
-CamPanel – Kamera-Einstellungen.
-
-Sektionen:
-  1. Anzeige      → Hintergrundfarbe
-  2. Steuerung    → Zoom / Rotation / Pan Geschwindigkeit
-  3. Invertierung → Richtungsumkehr für alle Achsen
-"""
-
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QSlider, QCheckBox, QComboBox, QFrame, QPushButton
@@ -15,8 +6,6 @@ from PySide6.QtCore import Qt
 
 from datum_sim.core.settings import AppSettings
 
-
-# ── Hilfsfunktionen ───────────────────────────────────────────────────────────
 
 LABEL_STYLE = "color: rgba(255,255,255,180); font-size: 11px;"
 SECTION_STYLE = """
@@ -28,7 +17,7 @@ SECTION_STYLE = """
 """
 
 def _section_label(text: str) -> QLabel:
-    """Überschrift für eine Sektion."""
+    """Heading for a section"""
     lbl = QLabel(text)
     lbl.setStyleSheet(
         "color: white; font-size: 12px; font-weight: bold;"
@@ -52,9 +41,9 @@ def _separator() -> QFrame:
 
 
 def _speed_slider(setting_name: str, s: AppSettings) -> QSlider:
-    """Slider 0.1× – 5.0×, gespeicherter Wert als Startpunkt."""
+    """Slider 0.1× – 5.0×, saved value as start."""
     slider = QSlider(Qt.Horizontal)
-    slider.setRange(1, 50)       # intern ×10, also 0.1 – 5.0
+    slider.setRange(1, 50)
     slider.setSingleStep(1)
     slider.setPageStep(5)
     current = getattr(s, setting_name)
@@ -62,8 +51,7 @@ def _speed_slider(setting_name: str, s: AppSettings) -> QSlider:
     return slider
 
 
-# ── CamPanel ──────────────────────────────────────────────────────────────────
-
+# Camera Panel
 class CamPanel(QWidget):
 
     def __init__(self, parent=None):
@@ -82,8 +70,7 @@ class CamPanel(QWidget):
         self._build_invert(root)
         root.addStretch()
 
-    # ── 1. Anzeige ────────────────────────────────────────────────────────────
-
+    # Viewport
     def _build_display(self, root: QVBoxLayout):
         root.addWidget(_section_label("View"))
 
@@ -119,8 +106,7 @@ class CamPanel(QWidget):
     def _on_color_changed(self, _):
         self._s.bg_color = self._color_box.currentData()
 
-    # ── 2. Steuerung ──────────────────────────────────────────────────────────
-
+    # Camera
     def _build_speed(self, root: QVBoxLayout):
         root.addWidget(_section_label("Camera"))
 

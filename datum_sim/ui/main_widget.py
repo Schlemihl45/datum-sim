@@ -1,8 +1,11 @@
+import re
+
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Signal
 
 from datum_sim.ui.viewport import Viewport
 from datum_sim.ui.overlay.settings_panel import SettingsPanel
+from datum_sim.ui.overlay.control_hub import ControlHub
 
 
 class DatumSimWidget(QWidget):
@@ -19,6 +22,8 @@ class DatumSimWidget(QWidget):
         # ── Subwidgets (Kinder von self, nicht von viewport!) ─────────────────
         self.viewport = Viewport(self)
         self.settings = SettingsPanel(self)
+        self.control_hub = ControlHub(self)
+        self.control_hub.set_gcode("G00 X75 Y20 Z20 M3 S1500 G01")
 
         self._layout_overlays()
 
@@ -35,6 +40,16 @@ class DatumSimWidget(QWidget):
             w,
             self.height(),
         )
+
+        if hasattr(self, 'control_hub'):
+            margin = 20
+            hub_w = self.control_hub.width()
+            hub_h = self.control_hub.height()  # Holt sich die dynamische Höhe!
+
+            x = (self.width() - hub_w) // 2
+            y = self.height() - hub_h - margin
+
+            self.control_hub.setGeometry(x, y, hub_w, hub_h)
 
     def resizeEvent(self, e):
         super().resizeEvent(e)

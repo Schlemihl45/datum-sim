@@ -56,7 +56,7 @@ class ArcballCamera:
     def rotate(self, dx: float, dy: float):
         """dx/dy in Pixel → Kamera dreht um Fokuspunkt."""
         self.yaw  -= dx * 0.4
-        self.pitch = float(np.clip(self.pitch + dy * 0.4, -89.0, 89.0))
+        self.pitch = float(np.clip(self.pitch + dy * 0.4, -89.9, 89.9))
 
     def zoom(self, delta: float):
         """delta > 0 = heranzoomen."""
