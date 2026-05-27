@@ -137,3 +137,46 @@ class AppSettings(QObject):
     def invert_pan_y(self, v: bool):
         self._qs.setValue("camera/invert_pan_y", v)
         self.invert_pan_y_changed.emit(v)
+
+    # ── Simulation ────────────────────────────────────────────────────────────────
+
+    sim_mode_changed = Signal(str)
+    tool_display_changed = Signal(str)
+    show_rapid_changed = Signal(bool)
+    show_grid_changed = Signal(bool)
+
+    @property
+    def sim_mode(self) -> str:
+        return self._qs.value("sim/mode", "toolpath_full", type=str)
+
+    @sim_mode.setter
+    def sim_mode(self, v: str):
+        self._qs.setValue("sim/mode", v)
+        self.sim_mode_changed.emit(v)
+
+    @property
+    def tool_display(self) -> str:
+        return self._qs.value("sim/tool_display", "point", type=str)
+
+    @tool_display.setter
+    def tool_display(self, v: str):
+        self._qs.setValue("sim/tool_display", v)
+        self.tool_display_changed.emit(v)
+
+    @property
+    def show_rapid(self) -> bool:
+        return self._qs.value("sim/show_rapid", True, type=bool)
+
+    @show_rapid.setter
+    def show_rapid(self, v: bool):
+        self._qs.setValue("sim/show_rapid", v)
+        self.show_rapid_changed.emit(v)
+
+    @property
+    def show_grid(self) -> bool:
+        return self._qs.value("sim/show_grid", True, type=bool)
+
+    @show_grid.setter
+    def show_grid(self, v: bool):
+        self._qs.setValue("sim/show_grid", v)
+        self.show_grid_changed.emit(v)

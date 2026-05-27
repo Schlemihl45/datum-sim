@@ -7,6 +7,9 @@ from datum_sim.ui.viewport import Viewport
 from datum_sim.ui.overlay.settings_panel import SettingsPanel
 from datum_sim.ui.overlay.control_hub import ControlHub
 
+from datum_sim.core.gcode_parser import GCodeParser
+from datum_sim.core.sim_engine import SimEngine
+
 
 class DatumSimWidget(QWidget):
 
@@ -22,8 +25,17 @@ class DatumSimWidget(QWidget):
         # ── Subwidgets (Kinder von self, nicht von viewport!) ─────────────────
         self.viewport = Viewport(self)
         self.settings = SettingsPanel(self)
+
         self.control_hub = ControlHub(self)
-        self.control_hub.set_gcode("G00 X75 Y20 Z20 M3 S1500 G01")
+        self.control_hub.play_clicked.connect(self.play)
+        self.control_hub.pause_clicked.connect(self.pause)
+        self.control_hub.stop_clicked.connect(self.stop)
+        self.control_hub.speed_changed.connect(self.set_speed)
+
+        self._engine = SimEngine(self)
+        self._engine.progress.connect(self._on_sim_progress)
+        self._engine.line_changed.connect(self._on_line_changed)
+        self._engine.finished.connect(self._on_sim_finished)
 
         self._layout_overlays()
 
@@ -56,35 +68,62 @@ class DatumSimWidget(QWidget):
         self._layout_overlays()
 
     # ── Öffentliche API ───────────────────────────────────────────────────────
+    def _on_sim_progress(self, vertex_index: int):
+        self.viewport.toolpath_renderer.set_progress(vertex_index)
+        self.viewport.update()
+
+    def _on_line_changed(self, line: int):
+        self.line_changed.emit(line)
+
+    def _on_sim_finished(self):
+        self.simulation_ended.emit()
+        self.control_hub.set_gcode("Simulation abgeschlossen")
 
     def load_file(self, path: str):
-        """NGC/G-Code Datei laden und Simulation vorbereiten."""
-        raise NotImplementedError("Schritt 4: GCodeParser")
+        self._engine.stop()
+        self._engine.wait()
+        parser = GCodeParser()
+        result = parser.parse_file(path)
+        self._result = result
+        self.viewport.load_result(result)
+        if result.moves:
+            self.control_hub.set_gcode(f"Geladen: {len(result.moves)} Moves")
 
     def load_gcode(self, gcode: str):
-        """G-Code direkt als String übergeben (z.B. aus LinuxCNC)."""
-        raise NotImplementedError("Schritt 4: GCodeParser")
+        parser = GCodeParser()
+        result = parser.parse_string(gcode)
+        self._result = result
+        self.viewport.load_result(result)
 
     def play(self):
-        """Simulation starten oder nach Pause fortsetzen."""
-        raise NotImplementedError("Schritt 6: SimEngine")
+        if self._engine.isRunning():
+            self._engine.resume()
+        else:
+            if self._result is not None:
+                self.viewport.toolpath_renderer.reset()
+                self._engine.load(
+                    self._result,
+                    self.viewport.toolpath_renderer  # ← neu
+                )
+                self._engine.start()
 
     def pause(self):
-        """Simulation pausieren (fortsetzbar)."""
-        raise NotImplementedError("Schritt 6: SimEngine")
+        self._engine.pause()
 
     def stop(self):
-        """Simulation stoppen und auf Anfang zurücksetzen."""
-        raise NotImplementedError("Schritt 6: SimEngine")
+        self._engine.stop()
+        self._engine.wait()
+        self.viewport.toolpath_renderer.reset()
+        self.viewport.update()
 
     def set_speed(self, factor: float):
-        """Simulationsgeschwindigkeit. 1.0 = Echtzeit, 10.0 = 10× schneller."""
-        raise NotImplementedError("Schritt 6: SimEngine")
+        self._engine.set_speed(factor)
 
     def jump_to_line(self, line: int):
         """Simulation zu einer bestimmten G-Code-Zeile vorspulen."""
-        raise NotImplementedError("Schritt 6: SimEngine")
+        print("jump_to_line")
 
     def set_current_line(self, line: int):
         """Aktuelle Zeile von außen setzen (LinuxCNC-Kopplung)."""
-        raise NotImplementedError("Schritt 6: SimEngine")
+        self.control_hub.set_gcode(f"N{line} ...")
+        print("set_current_line")

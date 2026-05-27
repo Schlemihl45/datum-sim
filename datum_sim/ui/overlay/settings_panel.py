@@ -9,6 +9,8 @@ Aufbau:
 """
 from pathlib import Path
 from datum_sim.ui.overlay.panels.cam_panel import CamPanel
+from datum_sim.ui.overlay.panels.sim_panel import SimPanel
+
 from PySide6.QtWidgets import (
     QWidget, QFrame, QToolButton, QStackedWidget, QVBoxLayout
 )
@@ -73,6 +75,7 @@ class SettingsPanel(QWidget):
 
         # Panel-Inhalte setzen
         self.set_tab_content(1, CamPanel())
+        self.set_tab_content(0, SimPanel())
 
     # ── Tab hinzufügen ────────────────────────────────────────────────────────
 

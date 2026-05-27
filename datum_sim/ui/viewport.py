@@ -11,6 +11,8 @@ from PySide6.QtGui import QEventPoint
 from datum_sim.core.camera import ArcballCamera
 from datum_sim.core.settings import AppSettings
 
+from datum_sim.renderer.toolpath_renderer import ToolpathRenderer
+
 
 _VERT = """
 #version 330 core
@@ -87,6 +89,9 @@ class Viewport(QOpenGLWidget):
         # Hintergrundfarbe live aktualisieren wenn Einstellung sich ändert
         AppSettings.instance().bg_color_changed.connect(self._on_bg_changed)
 
+        self._pending_result = None
+
+
     def _on_bg_changed(self, hex_color: str):
         self._bg = _hex_to_rgb(hex_color)
         self.update()
@@ -105,6 +110,14 @@ class Viewport(QOpenGLWidget):
             [(vbo_v, '3f', 'in_pos'), (vbo_c, '3f', 'in_col')],
         )
         self._scene_vert_count = len(verts)
+
+        # ← Erst hier: OpenGL-Context existiert
+        self.toolpath_renderer = ToolpathRenderer(self.ctx)
+
+        # Gepufferte Daten nachladen
+        if self._pending_result is not None:
+            self._apply_result(self._pending_result)
+            self._pending_result = None
 
     def resizeGL(self, w, h):
         if hasattr(self, 'ctx'):
@@ -219,3 +232,19 @@ class Viewport(QOpenGLWidget):
 
         self.update()
         return True
+
+    def load_result(self, result):
+        if self.toolpath_renderer is None:
+            # OpenGL noch nicht bereit → merken für initializeGL
+            self._pending_result = result
+            return
+        self._apply_result(result)
+
+    def _apply_result(self, result):
+        self.toolpath_renderer.load(result)
+        self.toolpath_renderer.build_vao(self._prog)
+        center = (result.bbox_min + result.bbox_max) / 2
+        center_gl = np.array([center[0], center[2], center[1]], dtype='f4')
+        size = float(np.linalg.norm(result.bbox_max - result.bbox_min))
+        self.camera.focus_on(center_gl, size)
+        self.update()

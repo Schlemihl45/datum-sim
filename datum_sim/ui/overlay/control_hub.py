@@ -3,6 +3,7 @@ from pathlib import Path
 from PySide6.QtWidgets import QLabel, QWidget, QToolButton, QHBoxLayout, QVBoxLayout, QPushButton, QSlider, QSizePolicy
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QFont, QIcon
+from PySide6.QtCore import Signal
 
 ICONS_DIR = Path(__file__).resolve().parents[2] / "assets" / "icons"
 class GCodeLine(QLabel):
@@ -48,6 +49,14 @@ class GCodeLine(QLabel):
         self.setText(formatted_text)
 
 class ControlHub(QWidget):
+    # Signals
+    play_clicked = Signal()
+    pause_clicked = Signal()
+    stop_clicked = Signal()
+    skip_forward_clicked = Signal()
+    skip_backward_clicked = Signal()
+    speed_changed = Signal(float)
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -69,7 +78,7 @@ class ControlHub(QWidget):
         self.btn_skip_forward = QPushButton(self)
         self.btn_skip_forward.setIcon(QIcon(str(ICONS_DIR / "player-skip-forward.svg")))
 
-        for btn in [self.btn_skip_backward, self.btn_play, self.btn_pause, self.btn_stop, self.btn_skip_forward]:
+        for btn in [self.btn_skip_backward, self.btn_pause, self.btn_play, self.btn_stop, self.btn_skip_forward]:
             btn.setFixedSize(40, 40)
             btn.setIconSize(QSize(24, 24))
             btn.setStyleSheet("""
@@ -130,6 +139,16 @@ class ControlHub(QWidget):
 
         self.gcode_line = GCodeLine(self)
         self.main_layout.addWidget(self.gcode_line)
+
+        # Connect signals
+        self.btn_play.clicked.connect(self.play_clicked)
+        self.btn_pause.clicked.connect(self.pause_clicked)
+        self.btn_stop.clicked.connect(self.stop_clicked)
+        self.btn_skip_forward.clicked.connect(self.skip_forward_clicked)
+        self.btn_skip_backward.clicked.connect(self.skip_backward_clicked)
+        self.slider_speed.valueChanged.connect(
+            lambda v: self.speed_changed.emit(v / 100.0)
+        )
 
     def set_gcode(self, raw_text: str):
         self.gcode_line.set_gcode(raw_text)
