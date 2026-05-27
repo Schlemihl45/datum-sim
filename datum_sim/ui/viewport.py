@@ -88,6 +88,9 @@ class Viewport(QOpenGLWidget):
 
         self._pending_result = None
 
+        self.toolpath_renderer = None
+        self._pending_result = None
+
 
     def _on_bg_changed(self, hex_color: str):
         self._bg = _hex_to_rgb(hex_color)
@@ -108,10 +111,9 @@ class Viewport(QOpenGLWidget):
         )
         self._scene_vert_count = len(verts)
 
-        # ← Erst hier: OpenGL-Context existiert
+        from datum_sim.renderer.toolpath_renderer import ToolpathRenderer
         self.toolpath_renderer = ToolpathRenderer(self.ctx)
 
-        # Gepufferte Daten nachladen
         if self._pending_result is not None:
             self._apply_result(self._pending_result)
             self._pending_result = None
@@ -231,8 +233,8 @@ class Viewport(QOpenGLWidget):
         return True
 
     def load_result(self, result):
+        """Wird von DatumSimWidget aufgerufen nach parse_file."""
         if self.toolpath_renderer is None:
-            # OpenGL noch nicht bereit → merken für initializeGL
             self._pending_result = result
             return
         self._apply_result(result)
@@ -240,6 +242,7 @@ class Viewport(QOpenGLWidget):
     def _apply_result(self, result):
         self.toolpath_renderer.load(result)
         self.toolpath_renderer.build_vao(self._prog)
+        # Kamera auf Bounding Box ausrichten
         center = (result.bbox_min + result.bbox_max) / 2
         center_gl = np.array([center[0], center[2], center[1]], dtype='f4')
         size = float(np.linalg.norm(result.bbox_max - result.bbox_min))
