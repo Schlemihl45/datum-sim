@@ -36,7 +36,6 @@ class DatumSimWidget(QWidget):
 
         self._result = None
         self._engine = SimEngine(self)
-        self._engine.progress.connect(self._on_progress)
         self._engine.line_changed.connect(self._on_line_changed)
         self._engine.finished.connect(self._on_finished)
 

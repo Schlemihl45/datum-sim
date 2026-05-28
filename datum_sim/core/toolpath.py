@@ -3,7 +3,6 @@ from dataclasses import dataclass, field
 from typing import Literal
 import numpy as np
 
-
 @dataclass
 class Move:
     type:        Literal['rapid', 'linear', 'arc_cw', 'arc_ccw']
